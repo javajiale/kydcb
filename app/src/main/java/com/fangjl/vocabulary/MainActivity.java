@@ -17,13 +17,15 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.io.IOException;
+
 public class MainActivity extends FragmentActivity implements
         OnItemClickListener {
 
     private DrawerLayout mDrawerLayout;
     private ListView mLv;
     private FragmentManager fragmentManager;
-    private Fragment fragment1, fragment2, fragment3;
+    private Fragment fragment1, fragment2, fragment3,fragment4;
     private String[] str;
 
     private FragmentTransaction transaction;
@@ -97,7 +99,7 @@ public class MainActivity extends FragmentActivity implements
 
 
         mLv = (ListView) findViewById(R.id.id_lv);
-        str = new String[] { "index","demo","Query Word","schedule"};
+        str = new String[] { "主页","单词表","单词查询","每日签到","生词本"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, str);
         mLv.setAdapter(adapter);
@@ -107,6 +109,7 @@ public class MainActivity extends FragmentActivity implements
         fragment1 = new vocabulary_fragment();
         fragment2 = new Fragment3();
         fragment3 = new Schedule_fragment();
+        fragment4 = new vocab_fragment();
     }
 
 
@@ -132,6 +135,11 @@ public class MainActivity extends FragmentActivity implements
                 fragmentManager.beginTransaction()
                         .replace(R.id.id_framelayout2, fragment3).commit();
                 break;
+            case 4:
+                fragmentManager.beginTransaction()
+                        .replace(R.id.id_framelayout2, fragment4).commit();
+                break;
+
         }
         setTitle(str[position]);
         mDrawerLayout.closeDrawers();

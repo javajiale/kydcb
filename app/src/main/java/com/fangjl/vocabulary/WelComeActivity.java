@@ -23,11 +23,9 @@ public class WelComeActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle saveInstanceState) {
-
-
         DBHelper helper = new DBHelper(this,"vocabulary.db",null,1);
         try {
-            helper.deleteDatabase(this);
+           // helper.deleteDatabase(this);
             helper.createDatabase(this);
         } catch (IOException e) {
             e.printStackTrace();

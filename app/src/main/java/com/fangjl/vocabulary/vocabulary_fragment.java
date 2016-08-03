@@ -1,5 +1,6 @@
 package com.fangjl.vocabulary;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
@@ -9,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,16 +28,17 @@ import com.baoyz.swipemenulistview.SwipeMenuListView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class vocabulary_fragment extends Fragment {
+public class vocabulary_fragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
 //	private List<ApplicationInfo> mAppList;
 	private List<String> mWordList;
 	private SwipeMenuListView mListView;
 	private AppAdapter mAdapter;
+	private SwipeRefreshLayout mSwipeLayout;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.fragment_listening_vocabulary, null);
+		return inflater.inflate(R.layout.fragment_vocabulary, null);
 	}
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -48,6 +51,8 @@ public class vocabulary_fragment extends Fragment {
 		mAdapter = new AppAdapter();
 	//	Adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_expandable_list_item_1, getData(getArguments().getString("type")));
 		mListView.setAdapter(mAdapter);
+
+
 
 		// step 1. create a MenuCreator
 		SwipeMenuCreator creator = new SwipeMenuCreator() {
@@ -107,8 +112,11 @@ public class vocabulary_fragment extends Fragment {
 					case 1:
 						// delete
 //					    delete(item);
-						mWordList.remove(position);
-						mAdapter.notifyDataSetChanged();
+//						mWordList.remove(position);
+//						mAdapter.notifyDataSetChanged();
+//						mListView.smoothScrollToPosition(getPosition());
+						saveInVocab(item);
+						Toast.makeText(getActivity().getApplicationContext(),"加入成功", 0).show();
 						break;
 				}
 			}
@@ -138,9 +146,45 @@ public class vocabulary_fragment extends Fragment {
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
 										   int position, long id) {
 				Toast.makeText(getActivity().getApplicationContext(), position + " long click", 0).show();
+				setPosition(position);
 				return false;
 			}
 		});
+
+
+
+		mSwipeLayout = (SwipeRefreshLayout) getActivity().findViewById(R.id.id_swipe_ly);
+
+		mSwipeLayout.setOnRefreshListener(this);
+
+	}
+
+
+	private int getPosition(){
+		DBHelper dbHelper = new DBHelper(getActivity(),"vocabulary.db",null,1);
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		Cursor cursor = db.query("bookmark",new String[]{"position"},null,null,null,null,"id desc",null);//"select position from bookmark order by id DESC"
+		if(cursor.moveToNext()) {
+			return cursor.getInt(0);
+		}
+		else
+			return 0;
+	}
+
+	private void saveInVocab(String word){
+		DBHelper dbHelper = new DBHelper(getActivity(),"vocabulary.db",null,1);
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		ContentValues values=new ContentValues();
+		values.put("word",word);
+		db.insert("vocab","id",values);
+	}
+
+	private void setPosition(int p){
+		DBHelper dbHelper = new DBHelper(getActivity(),"vocabulary.db",null,1);
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		ContentValues values=new ContentValues();
+		values.put("position",p);
+		db.insert("bookmark","id",values);
 	}
 
 	private List<String> getData(){
@@ -169,6 +213,12 @@ public class vocabulary_fragment extends Fragment {
 			startActivity(intent);
 		} catch (Exception e) {
 		}
+	}
+
+	@Override
+	public void onRefresh() {
+		mListView.smoothScrollToPosition( getPosition());
+		mSwipeLayout.setRefreshing(false);
 	}
 
 //	private void open(ApplicationInfo item) {
